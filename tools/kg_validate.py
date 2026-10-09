@@ -413,6 +413,46 @@ def _has_unquoted_date(value):
 SLUG = re.compile(r"^[A-Za-z_][A-Za-z0-9_-]*$")
 
 
+ISO_PREFIX = re.compile(r"^[0-9]{4}(-[0-9]{2}(-[0-9]{2})?)?$")
+TESTIMONY_METHOD = re.compile(r"^testemunho: ")
+
+
+def coherence_warnings(doc):
+    """Os avisos SHOULD que o schema não exprime, porque cruzam campos ou arestas (Q_RADAR_WARNINGS_WITHOUT_CASES):
+
+    - integrity.testimony-in-prod: nó PROD cuja base é testemunho (evidence_class: testimony ou method da classe
+      testemunho): relato não é artefato vivo, e o plane pede DEV;
+    - integrity.verified-before-fact: verified_at anterior a valid_from, comparados na granularidade do mais curto
+      (AAAA, AAAA-MM ou AAAA-MM-DD); data que não está nessa forma não é comparada;
+    - integrity.untraced-decision: decision viva (não superseded nem refuted) sem origem: nem trace com texto, nem
+      provenance, nem aresta TRACES_TO saindo dela.
+    Um campo de tipo errado (from ou id em lista ou mapa) já reprova no MUST: aqui ele é ignorado, nunca quebra.
+    """
+    out = collections.Counter()
+    nodes = [n for n in doc.get("nodes") or [] if isinstance(n, dict)] if isinstance(doc.get("nodes"), list) else []
+    edges = doc.get("edges") if isinstance(doc.get("edges"), list) else []
+    # só texto entra no conjunto: um from ou id em lista ou mapa já reprova no MUST, e aqui não pode quebrar o leitor
+    traced = {e.get("from") for e in edges
+              if isinstance(e, dict) and e.get("edge_type") == "TRACES_TO" and isinstance(e.get("from"), str)}
+    for n in nodes:
+        prov = n.get("provenance") if isinstance(n.get("provenance"), dict) else {}
+        method = prov.get("method")
+        if n.get("plane") == "PROD" and (n.get("evidence_class") == "testimony"
+                                         or (isinstance(method, str) and TESTIMONY_METHOD.match(method))):
+            out["integrity.testimony-in-prod"] += 1
+        vf, va = n.get("valid_from"), n.get("verified_at")
+        if isinstance(vf, str) and isinstance(va, str) and ISO_PREFIX.match(vf) and ISO_PREFIX.match(va):
+            k = min(len(vf), len(va))
+            if va[:k] < vf[:k]:
+                out["integrity.verified-before-fact"] += 1
+        trace = n.get("trace")
+        if (n.get("node_type") == "decision" and n.get("status") not in ("superseded", "refuted")
+                and not (isinstance(trace, str) and trace.strip()) and not prov
+                and not (isinstance(n.get("id"), str) and n["id"] in traced)):
+            out["integrity.untraced-decision"] += 1
+    return out
+
+
 def warning_counts(text, validator, should_validator):
     """Os códigos SHOULD de warnings() com a contagem de ocorrências (as chaves são as de warnings())."""
     raw, doc, parse_code = parse_v1(text)
@@ -423,11 +463,13 @@ def warning_counts(text, validator, should_validator):
     out = collections.Counter({c: n for c, n in should.items() if c not in must})
     if _has_unquoted_date(raw):
         out["yaml.unquoted-date"] += 1
+    out.update(coherence_warnings(doc))
     return out
 
 
 def warnings(text, validator, should_validator):
-    """Os códigos SHOULD: o que o schema SHOULD acusa e o MUST não, mais data sem aspas.
+    """Os códigos SHOULD: o que o schema SHOULD acusa e o MUST não, mais data sem aspas e os avisos de coerência
+    (coherence_warnings).
 
     Arquivo que já reprova no parse não recebe alerta de forma. Chave desconhecida cujo nome não é
     slug (<<, 1.0) alerta como form.pattern.<escopo>.key, o código que o schema SHOULD emite para ela.
