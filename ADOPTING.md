@@ -34,14 +34,14 @@ O adotante usa só `update` e `check`.
 A primeira vez, a partir de um clone deste repo:
 
 ```bash
-python3 -I -B tools/kg_vendor.py update --tag contract-v4.1.1 --dest <adotante>/vendor/kg-ssot
+python3 -I -B tools/kg_vendor.py update --tag contract-v4.2.0 --dest <adotante>/vendor/kg-ssot
 ```
 
 Para atualizar, rode a partir do vendor, com `--source` obrigatório. Ele aceita caminho ou URL, e uma URL
 vira um clone nu descartável. Dentro do vendor, o repo git é o do adotante, que não tem a tag:
 
 ```bash
-python3 -I -B vendor/kg-ssot/tools/kg_vendor.py update --tag contract-v4.1.1 --source <caminho ou URL deste repo>
+python3 -I -B vendor/kg-ssot/tools/kg_vendor.py update --tag contract-v4.2.0 --source <caminho ou URL deste repo>
 ```
 
 - **Leitura:** o vendor lê a tag com `git archive`, nunca a árvore de trabalho. Os nomes são literais: um `*`
@@ -178,6 +178,14 @@ recalcula o carimbo. Isso o review do PR do adotante pega, porque o diff do cari
 No MUST, a comparação é por grafo: consertar um grafo não compensa quebrar outro. A dívida SHOULD é por código,
 um total de grafos. Tirar um aviso de um grafo e pôr o mesmo em outro empata.
 
+**Dívida por nó.** Por grafo, uma melhora espalhada aparece como piora: consertar 3 ocorrências num grafo e criar 1
+em outro conta como +1 grafo. Desde a `contract-v4.2.0`, `kg_gate.py --update --granularity node` passa a contar e
+travar a dívida SHOULD por ocorrência, somada em todos os grafos. A base guarda a granularidade, e o gate a usa sem
+precisar da opção outra vez; `--granularity graph` volta ao padrão. Trocar não é piora: na passada que troca, a
+dívida é comparada na granularidade da base, e o `--update` só pede motivo se ela piorou de verdade. O MUST segue por
+grafo nas duas granularidades. Ocorrência é por nó ou aresta na maioria dos códigos; os que valem para o arquivo
+inteiro (`yaml.unquoted-date`, `form.range.top.nodes`) contam 1 por grafo.
+
 Um ganho passa e pede para travar: o grafo saiu de `failing` porque foi consertado, ou a dívida caiu. Um grafo
 apagado não conta como conserto: o gate diz que ele saiu do corpus, e diz quando o corpus encolhe, para o PR
 mostrar a remoção. Para
@@ -193,7 +201,8 @@ Sobre `--update`:
 - no `kg_gate.py`:
   - `--repo` não é um repo git;
   - a base está ausente (sem `--update`), ilegível ou fora do formato. O formato é `contract` como texto,
-    `failing` como caminho → [códigos], `debt` como código → inteiro ≥ 0 e `accepted_regressions` como lista;
+    `failing` como caminho → [códigos], `debt` como código → inteiro ≥ 0, `accepted_regressions` como lista e,
+    opcional, `granularity` como `graph` ou `node`;
   - um `.kg.yaml` não pôde ser lido.
 - no `kg_vendor.py`:
   - o `--source` não é repo git, a tag não existe, ou o `spec/release.json` dela está ausente, ilegível ou
@@ -240,7 +249,7 @@ O que muda no v4:
   no v5. Ajuste antes os geradores que escrevem `provenance` (no primeiro adotante, seis deles emitiam `method` livre).
 
 O caminho, num PR só:
-1. `python3 -I -B vendor/kg-ssot/tools/kg_vendor.py update --tag contract-v4.1.1 --source <caminho ou URL deste repo>`,
+1. `python3 -I -B vendor/kg-ssot/tools/kg_vendor.py update --tag contract-v4.2.0 --source <caminho ou URL deste repo>`,
    e `git add vendor/kg-ssot`;
 2. `python3 -I -B vendor/kg-ssot/tools/kg_gate.py` mostra a identidade nova do contrato e os grafos que passam a
    falhar no MUST;
@@ -248,6 +257,14 @@ O caminho, num PR só:
    `failing`, como **dívida herdada**. Sem o motivo, o `--update` recusa, porque grafo que passava e falha é
    piora. Daí em diante vale a catraca: grafo novo tem de passar no v4, grafo de `failing` não ganha código MUST
    novo, e a dívida só encolhe, com `--update` a cada conserto.
+
+**Onde a fonte mora** (`provenance.locality`, opcional, desde a `contract-v4.2.0`): `repo` (arquivo versionado no
+próprio repo), `web` (endereço público), `host` (só existe numa máquina: um journal local, um caminho fora do repo) ou
+`pessoa` (o relato de alguém). Fora desses valores, alerta como `form.enum.node.provenance.locality`. Serve para medir
+o que um terceiro consegue reverificar e para barrar `host` quando o grafo vai a público.
+
+**Label corrigido.** Quando uma revisão troca o label de um nó, o label anterior vai para a `narrative`, começando
+por `label anterior: …`. O git guarda o resto do histórico; o contrato não tem campo próprio para isso.
 
 O que fazer com um nó `confirmed` ou PROD **sem fonte recuperável**:
 - **o padrão é rebaixar** o `status` para `unverifiable`, que não exige `provenance`: o que não se rastreia não
