@@ -34,14 +34,14 @@ O adotante usa só `update` e `check`.
 A primeira vez, a partir de um clone deste repo:
 
 ```bash
-python3 -I -B tools/kg_vendor.py update --tag contract-v4.2.0 --dest <adotante>/vendor/kg-ssot
+python3 -I -B tools/kg_vendor.py update --tag contract-v4.3.0 --dest <adotante>/vendor/kg-ssot
 ```
 
 Para atualizar, rode a partir do vendor, com `--source` obrigatório. Ele aceita caminho ou URL, e uma URL
 vira um clone nu descartável. Dentro do vendor, o repo git é o do adotante, que não tem a tag:
 
 ```bash
-python3 -I -B vendor/kg-ssot/tools/kg_vendor.py update --tag contract-v4.2.0 --source <caminho ou URL deste repo>
+python3 -I -B vendor/kg-ssot/tools/kg_vendor.py update --tag contract-v4.3.0 --source <caminho ou URL deste repo>
 ```
 
 - **Leitura:** o vendor lê a tag com `git archive`, nunca a árvore de trabalho. Os nomes são literais: um `*`
@@ -249,7 +249,7 @@ O que muda no v4:
   no v5. Ajuste antes os geradores que escrevem `provenance` (no primeiro adotante, seis deles emitiam `method` livre).
 
 O caminho, num PR só:
-1. `python3 -I -B vendor/kg-ssot/tools/kg_vendor.py update --tag contract-v4.2.0 --source <caminho ou URL deste repo>`,
+1. `python3 -I -B vendor/kg-ssot/tools/kg_vendor.py update --tag contract-v4.3.0 --source <caminho ou URL deste repo>`,
    e `git add vendor/kg-ssot`;
 2. `python3 -I -B vendor/kg-ssot/tools/kg_gate.py` mostra a identidade nova do contrato e os grafos que passam a
    falhar no MUST;
@@ -262,6 +262,27 @@ O caminho, num PR só:
 próprio repo), `web` (endereço público), `host` (só existe numa máquina: um journal local, um caminho fora do repo) ou
 `pessoa` (o relato de alguém). Fora desses valores, alerta como `form.enum.node.provenance.locality`. Serve para medir
 o que um terceiro consegue reverificar e para barrar `host` quando o grafo vai a público.
+
+**Referência a nó de outro grafo** (`external_edges`, opcional, desde a `contract-v4.3.0`): uma lista no topo do grafo,
+cada aresta com exatamente uma ponta externa `<caminho relativo à raiz do repo>#<id>` e a outra um id deste arquivo.
+Sem `from`, quem aponta é o grafo inteiro.
+
+```yaml
+external_edges:
+  - to: docs/pesquisa/outra.kg.yaml#C_ANTIGA      # este grafo supera um nó de outro grafo
+    edge_type: SUPERSEDES
+  - from: docs/graph/portas.kg.yaml#D_MATRIZ       # um nó de fora limita um nó daqui
+    to: D_CORTE
+    edge_type: CONSTRAINS
+```
+
+Os tipos são `SUPERSEDES`, `CONSTRAINS`, `SUPPORTS`, `REFUTES`, `TRACES_TO` e `DEPENDS_ON`. O gate confere o alvo contra
+todos os `.kg.yaml` rastreados do repo, inclusive os que o `--exclude` tira do corpus: alvo que não existe, ou grafo-alvo
+apagado, reprova quem aponta (`integrity.dangling-external`). Fora do gate, `kg_validate.py --corpus <raiz do repo>`
+faz a mesma conferência: num repo git, contra os `.kg.yaml` rastreados; fora de um repo, contra todo `.kg.yaml` sob o
+diretório. Sem `--corpus`, o leitor confere só a forma e a ponta local, e diz quantos arquivos ficaram com a ponta externa
+sem conferir. Uma referência ao próprio arquivo passa como externa; use `edges` para isso. Uma chave `x_` própria que fazia esse papel migra para cá; a que só declara algo, sem ser
+aresta, segue como `x_`.
 
 **Label corrigido.** Quando uma revisão troca o label de um nó, o label anterior vai para a `narrative`, começando
 por `label anterior: …`. O git guarda o resto do histórico; o contrato não tem campo próprio para isso.
