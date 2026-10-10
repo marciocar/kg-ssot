@@ -11,4 +11,4 @@ Este repositório é o **espelho das releases**: cada commit é uma tag `kg-ssot
 - A suíte: [`spec/conformance/`](spec/conformance/README.md).
 - Licença: Apache-2.0 ([`LICENSE`](LICENSE), escopo no [`NOTICE`](NOTICE)).
 
-Release atual: `kg-ssot-v4.3.1`.
+Release atual: `kg-ssot-v4.3.2`.
