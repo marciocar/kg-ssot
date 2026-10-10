@@ -23,7 +23,7 @@ suíte, inclusive comercialmente, mantendo o `LICENSE` e o `NOTICE`.
 
 Do lado do mantenedor deste repo, uma conferência de higiene que não viaja confere essa lista no CI:
 - toda entrada é coberta por arquivo rastreado;
-- a tag é `contract-v<version>`;
+- a tag é `kg-ssot-v<version>` (até a 4.3.0, `contract-v<version>`; as tags antigas continuam valendo);
 - o contrato citado é o vigente;
 - nenhum arquivo da release tem referência privada.
 
@@ -31,17 +31,21 @@ O adotante usa só `update` e `check`.
 
 ## 1. Trazer a release
 
+> **O nome da tag mudou na 4.3.1:** de `contract-vX.Y.Z` para `kg-ssot-vX.Y.Z`, para a tag dizer o produto também
+> no carimbo do adotante. Nada mais muda: as tags antigas seguem existindo, e o próximo update só troca a string do
+> `--tag`.
+
 A primeira vez, a partir de um clone deste repo:
 
 ```bash
-python3 -I -B tools/kg_vendor.py update --tag contract-v4.3.0 --dest <adotante>/vendor/kg-ssot
+python3 -I -B tools/kg_vendor.py update --tag kg-ssot-v4.3.1 --dest <adotante>/vendor/kg-ssot
 ```
 
 Para atualizar, rode a partir do vendor, com `--source` obrigatório. Ele aceita caminho ou URL, e uma URL
 vira um clone nu descartável. Dentro do vendor, o repo git é o do adotante, que não tem a tag:
 
 ```bash
-python3 -I -B vendor/kg-ssot/tools/kg_vendor.py update --tag contract-v4.3.0 --source <caminho ou URL deste repo>
+python3 -I -B vendor/kg-ssot/tools/kg_vendor.py update --tag kg-ssot-v4.3.1 --source <caminho ou URL deste repo>
 ```
 
 - **Leitura:** o vendor lê a tag com `git archive`, nunca a árvore de trabalho. Os nomes são literais: um `*`
@@ -241,15 +245,19 @@ O que muda no v4:
 - **Chave desconhecida sem o prefixo `x_` reprova** no topo, no `meta`, no nó e na aresta
   (`form.unknown-key.<escopo>.<chave>`), e o nome sem `x_` que nem é slug reprova como
   `form.pattern.<escopo>.key`. Dentro de `provenance`, a chave desconhecida segue só alertando.
-- **`provenance.method` tem vocabulário** (SHOULD no v4, MUST no v5): `'<classe>: <detalhe>'`, com a classe em
-  `medição` (o autor do grafo executou), `leitura` (documento primário), `juízes` (painel de agentes ou juízes),
-  `derivado` (derivação mecânica de campo, não reverificada) ou `testemunho` (uma pessoa ou sessão afirmou;
-  inclui a medição de terceiro lida aqui). Fora disso alerta como `form.pattern.node.provenance.method`.
+- **`provenance.method` tem vocabulário** (SHOULD no v4, MUST no v5): `'<classe>: <detalhe>'`. A classe diz **de que
+  tipo é a evidência que sustenta a afirmação**: `medição` (quem estabeleceu a afirmação executou e registrou o
+  comando), `leitura` (documento primário), `juízes` (painel de agentes ou juízes), `testemunho` (uma pessoa ou sessão
+  afirmou; inclui a medição de terceiro lida aqui) ou `derivado` (a afirmação é concluída de outras afirmações ou
+  campos, sem evidência própria). Fora disso alerta como `form.pattern.node.provenance.method`.
+  Quando uma migração preenche a `provenance` a partir do que o nó já trazia, a classe é a da evidência original, e o
+  detalhe diz que a migração não re-verificou, por exemplo `medição: <o que foi medido>; não reverificado na migração`
+  (decisão do mantenedor em 2026-10-09, `D_METHOD_CLASS_IS_EVIDENCE`).
   **Atenção:** se o seu CI cobra que grafo novo saia limpo também no SHOULD, este alerta já reprova lá no v4, e não só
   no v5. Ajuste antes os geradores que escrevem `provenance` (no primeiro adotante, seis deles emitiam `method` livre).
 
 O caminho, num PR só:
-1. `python3 -I -B vendor/kg-ssot/tools/kg_vendor.py update --tag contract-v4.3.0 --source <caminho ou URL deste repo>`,
+1. `python3 -I -B vendor/kg-ssot/tools/kg_vendor.py update --tag kg-ssot-v4.3.1 --source <caminho ou URL deste repo>`,
    e `git add vendor/kg-ssot`;
 2. `python3 -I -B vendor/kg-ssot/tools/kg_gate.py` mostra a identidade nova do contrato e os grafos que passam a
    falhar no MUST;
