@@ -155,7 +155,7 @@ O adotante nunca copia o contrato à mão. O vendor lê uma **tag** com `git arc
 sha256 de cada arquivo.
 
 Da raiz do adotante, com um clone do produto em `<clone>`. As saídas abaixo são de uma execução real com a tag
-`kg-ssot-v4.3.3`, a release anterior a esta; com a 4.3.4, a tag, o commit e a contagem de arquivos mudam:
+`kg-ssot-v4.3.3`; numa release mais nova, a tag, o commit e a contagem de arquivos mudam:
 
 ```bash
 python3 -I -B <clone>/tools/kg_vendor.py update --tag kg-ssot-v4.3.3 --dest vendor/kg-ssot --source <clone>
