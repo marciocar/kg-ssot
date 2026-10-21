@@ -26,7 +26,7 @@ arquivo *.json vira JsonText (as_source), e '-' segue --stdin-format yaml|json. 
 inicial reprovam como parse.yaml-error. No .kg.yaml, os três primeiros são os avisos yaml.unsafe-integer,
 yaml.lone-surrogate e yaml.depth-over-128.
 
---corpus DIR liga a conferência da ponta externa das external_edges (v4.3) contra os .kg.yaml sob DIR.
+--corpus DIR liga a conferência da ponta externa das external_edges (v4.3) contra os .kg.yaml e .kg.json sob DIR.
 --where acrescenta, por arquivo, uma linha por ocorrência com o nó ou a aresta (where()); a saída padrão não muda.
 --spike troca a saída humana e o rc pelos do spike (check() e classify(), perfil Yaml12BoolLoader), para
 reproduzir a medição do spike. --json OUT grava SEMPRE o formato do spike ({summary, results}),
@@ -72,7 +72,7 @@ CONTRACT_SHOULD = _ROOT / "spec" / "kg-contract-v4.should.schema.json"
 # A versão do contrato que este leitor julga. Uma regra que só o leitor vê (o perfil YAML, a quebra de linha) não muda
 # os bytes dos schemas sozinha: a higiene cobra que a descrição de um deles declare "No v<versão>", e é isso que
 # move o sha256 que o gate guarda como identidade.
-CONTRACT_VERSION = "4.6"
+CONTRACT_VERSION = "4.7"
 
 
 class Yaml12BoolLoader(yaml.SafeLoader):
@@ -435,7 +435,7 @@ def classify(error):
 
 # fullmatch nos três (EXTERNAL_REF, SLUG, ISO_PREFIX): o $ do Python casa antes de um \n final, e o do ECMA-262, o dos
 # patterns do contrato e do leitor JS, não; com match, "a.kg.yaml#ID\n" passava aqui e virava dangling-external.
-EXTERNAL_REF = re.compile(r"^(?:[A-Za-z0-9_][A-Za-z0-9_.-]*/)*[A-Za-z0-9_][A-Za-z0-9_.-]*\.kg\.yaml#[A-Za-z][A-Za-z0-9_]*$")
+EXTERNAL_REF = re.compile(r"^(?:[A-Za-z0-9_][A-Za-z0-9_.-]*/)*[A-Za-z0-9_][A-Za-z0-9_.-]*\.kg\.(?:yaml|json)#[A-Za-z][A-Za-z0-9_]*$")
 
 
 def is_external(ref):
@@ -466,7 +466,7 @@ def index_texts(items):
     """[(caminho, texto)] → {caminho: {ids}}: o corpus montado de textos já lidos (por exemplo, por git show)."""
     index = {}
     for name, text in items:
-        _, doc, _ = parse_v1(text)
+        _, doc, _ = parse_v1(text if isinstance(text, JsonText) else as_source(name, text))  # o .kg.json pelo perfil JSON
         nodes = doc.get("nodes") if doc and isinstance(doc.get("nodes"), list) else []
         index[name] = {str(n["id"]) for n in nodes if isinstance(n, dict) and n.get("id") is not None}
     return index
@@ -498,17 +498,19 @@ def uses_external(text):
 
 def corpus_index(root, files=None):
     """O corpus para conferir a ponta externa (v4.3): {caminho relativo a root: {ids}}. files: os caminhos a ler (o gate
-    passa os .kg.yaml rastreados); sem files, os .kg.yaml rastreados se root é repo git, senão todo .kg.yaml sob root.
+    passa os grafos rastreados); sem files, os .kg.yaml e .kg.json rastreados se root é repo git, senão todo grafo sob
+    root (desde o v4.7, a ponta externa pode ser um .kg.json).
     Arquivo ilegível entra sem ids. root que não é diretório é entrada quebrada (ValueError)."""
     root = pathlib.Path(root)
     if not root.is_dir():
         raise ValueError(f"corpus {root} não é um diretório")
     if files is None:  # num repo git, os rastreados (como o gate); fora dele, todo arquivo regular sob root
-        out = subprocess.run(["git", "-C", str(root), "ls-files", "-z", "--", "*.kg.yaml"], capture_output=True)
+        out = subprocess.run(["git", "-C", str(root), "ls-files", "-z", "--", "*.kg.yaml", "*.kg.json"],
+                             capture_output=True)
         if out.returncode == 0:
             files = [n for n in out.stdout.decode("utf-8").split("\0") if n]
         else:
-            files = sorted(p.relative_to(root).as_posix() for p in root.rglob("*.kg.yaml")
+            files = sorted(p.relative_to(root).as_posix() for g in ("*.kg.yaml", "*.kg.json") for p in root.rglob(g)
                            if ".git" not in p.relative_to(root).parts)
     names = [n for n in files if (root / n).is_file()]  # FIFO, diretório e apagado ficam fora
     items = []

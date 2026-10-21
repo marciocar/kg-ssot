@@ -123,7 +123,7 @@ com `.kg.yaml`.
 | `label` | texto | |
 | `x_*` | qualquer | |
 
-Uma referência externa é `<caminho>.kg.yaml#<id>`, com o caminho relativo à raiz do repositório e escrito com
+Uma referência externa é `<caminho>.kg.yaml#<id>`, ou `<caminho>.kg.json#<id>` desde o v4.7, com o caminho relativo à raiz do repositório e escrito com
 `/`. Cada segmento começa por letra, dígito ou `_`. Caminho absoluto, `..`, `\` e `:` reprovam.
 
 ## Integridade (fora do schema)
