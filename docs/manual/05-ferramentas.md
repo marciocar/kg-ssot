@@ -60,6 +60,7 @@ Opções úteis:
 | `--limit N` | Com `--format json`, quantas ocorrências por arquivo (default 50); o resumo conta todas |
 | `-` no lugar do arquivo | Lê o grafo do stdin, sem gravar arquivo temporário |
 | `--should-schema F` | Com `--schema`, o SHOULD que acompanha (no lugar do vizinho) |
+| `--due AAAA-MM-DD` | No lugar do veredito, o relatório de vencimento na data (desde a 4.15.0): o nó com `reverify_every` cujo `verified_at` somado à cadência vence na data ou antes, o que tem cadência sem carimbo e o que só tem `reverify_on`. O rc é 0 (ou 2 com entrada quebrada): o vencimento nunca reprova, e o relatório não julga o grafo (o gate segue sendo o `kg_gate.py`). Um arquivo que não parseia sai como `NÃO LIDO`; num job agendado, olhe essa lista, porque o rc não a acusa. A cadência fora da forma ou zerada não entra no relatório (o aviso SHOULD a acusa), nem o vencimento depois do ano 9999. Com `--format json`, sai no formato `kg-ssot.due/1` (`spec/due.schema.json`) |
 
 As opções `--json OUT`, `--spike`, `--git`, `--rev` e `--list` são do instrumento de medição que deu origem ao
 contrato (o "spike"): gravam e reproduzem um formato legado, congelado, e não fazem parte da interface estável. Para

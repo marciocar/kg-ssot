@@ -27,6 +27,11 @@ inicial reprovam como parse.yaml-error. No .kg.yaml, os três primeiros são os 
 yaml.lone-surrogate e yaml.depth-over-128.
 
 --corpus DIR liga a conferência da ponta externa das external_edges (v4.3) contra os .kg.yaml e .kg.json sob DIR.
+--due AAAA-MM-DD troca o veredito pelo relatório de vencimento (v4.8): o nó com reverify_every cujo verified_at
+somado à cadência já passou na data, o que tem cadência e não tem carimbo, e o que só tem reverify_on (por evento,
+sem data). Vence o que vence na data ou antes. Nunca muda o veredito nem julga o grafo: o rc é 0, ou 2 com entrada
+quebrada; um arquivo que não parseia sai no relatório (NÃO LIDO, broken no JSON). Com --format json, o relatório sai no
+formato kg-ssot.due/1 (spec/due.schema.json).
 --where acrescenta, por arquivo, uma linha por ocorrência com o nó ou a aresta (where()); a saída padrão não muda.
 --spike troca a saída humana e o rc pelos do spike (check() e classify(), perfil Yaml12BoolLoader), para
 reproduzir a medição do spike. --json OUT grava SEMPRE o formato do spike ({summary, results}),
@@ -38,9 +43,11 @@ quebrada (schema ou arquivo ilegível, git show que falha).
 Uso:
   kg_validate.py [--schema S [--should-schema S2]] [--stdin-format yaml|json] FILE...
   kg_validate.py --schema S --git REPO --rev SHA --list LISTFILE [--json OUT] [--spike]
+  kg_validate.py --due AAAA-MM-DD [--format json] FILE...
 """
 import argparse
 import bisect
+import calendar
 import collections
 import datetime
 import functools
@@ -72,7 +79,7 @@ CONTRACT_SHOULD = _ROOT / "spec" / "kg-contract-v4.should.schema.json"
 # A versão do contrato que este leitor julga. Uma regra que só o leitor vê (o perfil YAML, a quebra de linha) não muda
 # os bytes dos schemas sozinha: a higiene cobra que a descrição de um deles declare "No v<versão>", e é isso que
 # move o sha256 que o gate guarda como identidade.
-CONTRACT_VERSION = "4.7"
+CONTRACT_VERSION = "4.8"
 
 
 class Yaml12BoolLoader(yaml.SafeLoader):
@@ -1432,6 +1439,100 @@ def load_sources(args):
                 yield name, as_source(name, fh.read())
 
 
+DURATION = re.compile(r"^P(?:([0-9]+)Y)?(?:([0-9]+)M)?(?:([0-9]+)W)?(?:([0-9]+)D)?$")  # o pattern do SHOULD, sem hora
+ISO_DATE = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")  # só AAAA-MM-DD: o fromisoformat aceitaria também 2026-W43-1
+
+
+def parse_duration(value):
+    """(anos, meses, semanas, dias) de uma duração ISO 8601 só com data (P3M, P1Y2W), ou None fora da forma ou
+    zerada (P0D venceria no próprio dia do carimbo, para sempre; o SHOULD também a alerta)."""
+    m = DURATION.fullmatch(value) if isinstance(value, str) else None
+    if not m or not any(m.groups()):
+        return None
+    out = tuple(int(g or 0) for g in m.groups())
+    return out if any(out) else None
+
+
+def iso_date(value):
+    """A data de um texto AAAA-MM-DD, ou None."""
+    try:
+        return datetime.date.fromisoformat(value) if isinstance(value, str) and ISO_DATE.fullmatch(value) else None
+    except ValueError:
+        return None
+
+
+def add_duration(day, duration):
+    """day somado à duração: anos e meses pelo calendário (o dia passa para o último do mês quando não existe, como
+    31 de janeiro + P1M = 28 ou 29 de fevereiro), depois semanas e dias."""
+    years, months, weeks, days = duration
+    total = day.month - 1 + months + 12 * years
+    year, month = day.year + total // 12, total % 12 + 1
+    if year > datetime.MAXYEAR:
+        raise OverflowError("a data passa do ano 9999")
+    last = calendar.monthrange(year, month)[1]
+    return datetime.date(year, month, min(day.day, last)) + datetime.timedelta(weeks=weeks, days=days)
+
+
+def _as_date(value):
+    if isinstance(value, datetime.datetime):
+        return value.date()
+    if isinstance(value, datetime.date):
+        return value
+    return iso_date(value)
+
+
+def due_report(sources, as_of):
+    """O relatório de vencimento (v4.8), fora do veredito: {as_of, due, unstamped, event, broken}. due: o nó com
+    reverify_every válido cujo verified_at + a cadência é igual ou anterior a as_of; unstamped: cadência válida sem
+    verified_at legível; event: só reverify_on; broken: o arquivo que não parseia. A cadência fora da forma não entra
+    (o SHOULD já alerta form.pattern.node.reverify_every)."""
+    out = {"as_of": as_of.isoformat(), "due": [], "unstamped": [], "event": [], "broken": []}
+    for name, text in sources:
+        _, doc, err = parse_v1(text)
+        if err or not isinstance(doc, dict):
+            out["broken"].append({"file": name, "error": str(err or "a raiz não é um mapa")})
+            continue
+        nodes = doc.get("nodes") if isinstance(doc.get("nodes"), list) else []
+        for n in nodes:
+            if not isinstance(n, dict) or n.get("id") is None:
+                continue
+            nid, every = str(n["id"]), n.get("reverify_every")
+            duration = parse_duration(every)
+            if duration is None:
+                if isinstance(n.get("reverify_on"), str) and n["reverify_on"].strip():
+                    out["event"].append({"file": name, "id": nid, "reverify_on": n["reverify_on"]})
+                continue
+            stamped = _as_date(n.get("verified_at"))
+            if stamped is None:
+                out["unstamped"].append({"file": name, "id": nid, "reverify_every": every})
+                continue
+            try:
+                due_on = add_duration(stamped, duration)
+            except (OverflowError, ValueError):
+                continue  # vence depois do ano 9999: não vence na data pedida
+            if due_on <= as_of:
+                out["due"].append({"file": name, "id": nid, "verified_at": stamped.isoformat(), "reverify_every": every,
+                                   "due_on": due_on.isoformat(), "days_late": (as_of - due_on).days,
+                                   "reverify_on": n.get("reverify_on") if isinstance(n.get("reverify_on"), str) else None})
+    return out
+
+
+def due_lines(rep):
+    lines = []
+    for d in rep["due"]:
+        lines.append(f"VENCIDO      {d['file']}  {d['id']}: verificado em {d['verified_at']}, a cada {d['reverify_every']},"
+                     f" venceu em {d['due_on']}" + (f" ({d['days_late']} dias)" if d["days_late"] else " (hoje)"))
+    for d in rep["unstamped"]:
+        lines.append(f"SEM CARIMBO  {d['file']}  {d['id']}: cadência {d['reverify_every']} sem verified_at")
+    for d in rep["event"]:
+        lines.append(f"POR EVENTO   {d['file']}  {d['id']}: {d['reverify_on']}")
+    for d in rep["broken"]:
+        lines.append(f"NÃO LIDO     {d['file']}: {d['error']}")
+    lines.append(f"· em {rep['as_of']}: {len(rep['due'])} vencido(s), {len(rep['unstamped'])} sem carimbo,"
+                 f" {len(rep['event'])} por evento; o relatório não muda o veredito")
+    return lines
+
+
 def summarize(results):
     total = len(results)
     parse_ok = [r for r in results if r["parse"] is None]
@@ -1522,7 +1623,9 @@ def main(argv=None):
     ap.add_argument("--spike", action="store_true", help="saída humana e rc do spike (check/classify)")
     ap.add_argument("--where", action="store_true", help="lista cada ocorrência com o nó ou a aresta em que ela sai")
     ap.add_argument("--corpus", metavar="DIR", help="raiz do repo: confere a ponta externa das external_edges contra os"
-                                                     " .kg.yaml sob DIR (sem ela, só a forma e a ponta local)")
+                                                     " .kg.yaml e .kg.json sob DIR (sem ela, só a forma e a ponta"
+                                                     " local)")
+    ap.add_argument("--due", metavar="AAAA-MM-DD", help="o relatório de vencimento na data (v4.8), no lugar do veredito")
     ap.add_argument("--format", choices=("human", "json"), default="human",
                     help="json: o veredito estruturado kg-ssot.verdict/1 (spec/verdict.schema.json) em stdout")
     ap.add_argument("--limit", type=int, default=50, help="no --format json, ocorrências por arquivo (default 50)")
@@ -1542,6 +1645,24 @@ def main(argv=None):
     if args.where and args.spike:
         say("ENTRADA QUEBRADA  --where não vale com --spike (o spike tem saída própria, congelada)")
         return 2
+    if args.due is not None:
+        if args.spike or args.json or args.where or args.corpus:
+            say("ENTRADA QUEBRADA  --due não se combina com --spike, --json, --where nem --corpus")
+            return 2
+        as_of = iso_date(args.due)
+        if as_of is None:
+            say(f"ENTRADA QUEBRADA  --due {args.due!r}: a data é AAAA-MM-DD")
+            return 2
+        try:
+            rep = due_report(list(load_sources(args)), as_of)
+        except (OSError, ValueError, UnicodeDecodeError, subprocess.CalledProcessError) as exc:
+            say(f"ENTRADA QUEBRADA  {exc}")
+            return 2
+        if args.format == "json":
+            print(json.dumps({"schema_version": "kg-ssot.due/1", **rep}, ensure_ascii=False, indent=1))
+        else:
+            print("\n".join(due_lines(rep)))
+        return 0
     should_path = args.should_schema or should_for(args.schema)
     try:
         with open(args.schema, encoding="utf-8") as fh:
