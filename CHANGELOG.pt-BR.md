@@ -10,6 +10,17 @@ Esta é a tradução; a fonte é o [CHANGELOG.md](CHANGELOG.md) em inglês. As r
 
 ## [Unreleased]
 
+## [4.17.2] - 2026-10-22
+
+O servidor MCP diz ao cliente quais ferramentas só leem. Contrato v4.10, sem mudança.
+
+### Adicionado
+
+- Toda ferramenta do `kg_mcp` passa a anunciar as anotações de ferramenta do MCP: `kg_validate`, `kg_get`, `kg_list`,
+  `kg_query`, `kg_history` e `kg_schema_help` só leem e são idempotentes; `kg_write` e `kg_delete` são destrutivas.
+  Nenhuma sai do armazém local (`openWorldHint: false`). O cliente pode dispensar a confirmação da leitura e pedir a
+  da gravação e da remoção. São dicas; quem decide o que é gravado segue sendo o gate do armazém.
+
 ## [4.17.1] - 2026-10-22
 
 Correções de campo na consulta e no diff, achadas pelos adotantes no primeiro uso real da 4.17.0. Contrato v4.10, sem
@@ -69,7 +80,8 @@ O gate sem atrito. Contrato v4.9, sem mudança.
 - A troca de identidade do contrato sem veredito trocado passa com aviso (rc 0); `--strict-identity` volta ao
   comportamento antigo. O vendor confere os schemas contra o carimbo.
 
-[Unreleased]: https://github.com/marciocar/kg-ssot/compare/kg-ssot-v4.17.1...HEAD
+[Unreleased]: https://github.com/marciocar/kg-ssot/compare/kg-ssot-v4.17.2...HEAD
+[4.17.2]: https://github.com/marciocar/kg-ssot/compare/kg-ssot-v4.17.1...kg-ssot-v4.17.2
 [4.17.1]: https://github.com/marciocar/kg-ssot/compare/kg-ssot-v4.17.0...kg-ssot-v4.17.1
 [4.17.0]: https://github.com/marciocar/kg-ssot/compare/kg-ssot-v4.16.1...kg-ssot-v4.17.0
 [4.16.1]: https://github.com/marciocar/kg-ssot/compare/kg-ssot-v4.16.0...kg-ssot-v4.16.1

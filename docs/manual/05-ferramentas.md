@@ -466,6 +466,11 @@ produto não depende dele, e ele não depende de um cliente específico.
 | `kg_query` | a consulta e a projeção do `kg_query.py` sobre o armazém: filtros, fila dos abertos, vizinhança e `fields`, paginada por cursor |
 | `kg_schema_help` | o contrato vigente para um modelo: os schemas MUST e SHOULD inteiros, um exemplo mínimo que passa, as regras de integridade e a correção dos códigos mais comuns |
 
+Desde a 4.17.2, cada ferramenta anuncia no `tools/list` as anotações do MCP: as de leitura (`kg_validate`, `kg_get`,
+`kg_list`, `kg_query`, `kg_history`, `kg_schema_help`) com `readOnlyHint` e `idempotentHint`, e o `kg_write` e o
+`kg_delete` com `destructiveHint`; todas com `openWorldHint: false`, porque o armazém é local. São dicas para o cliente
+pedir ou dispensar a confirmação; o gate do armazém segue decidindo o que é gravado.
+
 Sem `--root`, só `kg_validate` e `kg_schema_help` aparecem. Com `--read-only`, `kg_write` e `kg_delete` somem da lista.
 
 Com `--store-optional`, uma raiz que não abre (um arquivo no lugar da pasta, uma pasta sem permissão) não derruba o

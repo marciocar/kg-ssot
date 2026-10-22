@@ -10,6 +10,17 @@ Releases before 4.16.0 are described in [ADOPTING.md](ADOPTING.md) (Portuguese).
 
 ## [Unreleased]
 
+## [4.17.2] - 2026-10-22
+
+The MCP server tells clients which tools only read. Contract v4.10, unchanged.
+
+### Added
+
+- Every tool in `kg_mcp` now announces MCP tool annotations: `kg_validate`, `kg_get`, `kg_list`, `kg_query`,
+  `kg_history` and `kg_schema_help` are read-only and idempotent; `kg_write` and `kg_delete` are destructive. None
+  reaches outside the local store (`openWorldHint: false`). A client can skip confirmation for reads and ask before a
+  write or delete. They are hints; the store gate still decides what is written.
+
 ## [4.17.1] - 2026-10-22
 
 Field fixes to the query and diff tools, found by adopters on their first real use of 4.17.0. Contract v4.10, unchanged.
@@ -67,7 +78,8 @@ The frictionless gate. Contract v4.9, unchanged.
 - A contract identity change with no verdict change passes with a notice (rc 0); `--strict-identity` restores the old
   behavior. The vendor checks the schemas against their stamp.
 
-[Unreleased]: https://github.com/marciocar/kg-ssot/compare/kg-ssot-v4.17.1...HEAD
+[Unreleased]: https://github.com/marciocar/kg-ssot/compare/kg-ssot-v4.17.2...HEAD
+[4.17.2]: https://github.com/marciocar/kg-ssot/compare/kg-ssot-v4.17.1...kg-ssot-v4.17.2
 [4.17.1]: https://github.com/marciocar/kg-ssot/compare/kg-ssot-v4.17.0...kg-ssot-v4.17.1
 [4.17.0]: https://github.com/marciocar/kg-ssot/compare/kg-ssot-v4.16.1...kg-ssot-v4.17.0
 [4.16.1]: https://github.com/marciocar/kg-ssot/compare/kg-ssot-v4.16.0...kg-ssot-v4.16.1
