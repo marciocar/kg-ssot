@@ -1,4 +1,4 @@
-<!-- translation-of: docs/manual/05-tools.md sha256:2972e3ae88b98f49 -->
+<!-- translation-of: docs/manual/05-tools.md sha256:8e051e9610a6344c -->
 # 5. Ferramentas
 
 [English](../05-tools.md) | **Português (Brasil)**
@@ -126,7 +126,7 @@ python3 -I -B vendor/kg-ssot/tools/kg_validate.py --format json \
  "contract": {
   "must": "spec/kg-contract-v4.schema.json",
   "should": "spec/kg-contract-v4.should.schema.json",
-  "release": "kg-ssot-v4.23.0",
+  "release": "kg-ssot-v4.24.0",
   "sha256": { "must": "6a05cb1e…", "should": "04327d29…" }
  },
  "results": [
@@ -295,6 +295,8 @@ python3 -I -B vendor/kg-ssot/tools/kg_vendor.py check --dest vendor/kg-ssot
 | `--profile gate` | Traz só o mínimo para rodar o gate e o check (12 arquivos desde a 4.18.0, sem a suíte); `--profile full` volta à release inteira |
 | `--force` | Substitui um vendor editado localmente |
 | `--index` (no `check`) | Confere o índice do git em vez da árvore de trabalho |
+| `--ref COMMIT` (no `update`) | A bancada antes da tag (4.24): traz um commit que ainda não é release, de um repositório a que você chega. O carimbo diz `unreleased` |
+| `--allow-unreleased` (no `check` e no `kg_gate.py`) | Aceita um vendor de bancada. Sem ele, o check e o gate reprovam esse vendor (e o `kg_gate.py` nunca grava a base a partir de um) |
 
 **Por que `-B`?** Os scripts do kit não gravam bytecode, mas uma ferramenta sua que **importa** um módulo do kit
 grava o `.pyc` dentro do vendor, e o próximo `check` reprova. Rode tudo com `python3 -I -B`, ou com

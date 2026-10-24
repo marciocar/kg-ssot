@@ -10,6 +10,22 @@ Esta é a tradução; a fonte é o [CHANGELOG.md](CHANGELOG.md) em inglês. As r
 
 ## [Unreleased]
 
+## [4.24.0] - 2026-10-24
+
+Um adotante testa um commit antes da tag sem refazer a tag na máquina, e o vendor de bancada nunca passa por release.
+Contrato v4.14, sem mudança.
+
+### Adicionado
+
+- **O `kg_vendor.py update --ref <commit>`, para a bancada antes da tag.** Um adotante que testa uma release antes de
+  ela existir precisava refazer a tag de um commit na máquina, porque o `--tag` recusa, com razão, o commit cujo
+  `spec/release.json` declara outra versão. O `--ref` traz a árvore de um commit como ela é; o carimbo diz
+  `unreleased` e guarda o commit, e o `check` reprova esse vendor (`VENDOR FORA DE RELEASE`, rc 1) sem o
+  `--allow-unreleased`, para um vendor de bancada nunca passar por release no CI. O `kg_gate.py` o recusa do mesmo
+  jeito (`--allow-unreleased`, e nunca `--update` a partir de um vendor de bancada), para um CI que roda só o gate
+  não tomar a bancada por release. Um `update --tag` depois o substitui sem `--force`. Pedido pela bancada de um
+  adotante.
+
 ## [4.23.0] - 2026-10-23
 
 Um código curto ganha nome legível no próprio vocabulário, e os códigos da prosa são conferidos contra ele, com

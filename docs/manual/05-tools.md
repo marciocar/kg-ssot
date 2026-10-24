@@ -123,7 +123,7 @@ python3 -I -B vendor/kg-ssot/tools/kg_validate.py --format json \
  "contract": {
   "must": "spec/kg-contract-v4.schema.json",
   "should": "spec/kg-contract-v4.should.schema.json",
-  "release": "kg-ssot-v4.23.0",
+  "release": "kg-ssot-v4.24.0",
   "sha256": { "must": "6a05cb1e…", "should": "04327d29…" }
  },
  "results": [
@@ -293,6 +293,8 @@ python3 -I -B vendor/kg-ssot/tools/kg_vendor.py check --dest vendor/kg-ssot
 | `--profile gate` | Brings only the minimum to run the gate and the check (12 files since 4.18.0, without the suite); `--profile full` goes back to the whole release |
 | `--force` | Replaces a locally edited vendor |
 | `--index` (on `check`) | Verifies the git index instead of the working tree |
+| `--ref COMMIT` (on `update`) | The bench before a tag (4.24): brings a commit that is not a release yet, from a repository where you can reach it. The stamp says `unreleased` |
+| `--allow-unreleased` (on `check` and on `kg_gate.py`) | Accepts a bench vendor. Without it, the check and the gate fail on one (`kg_gate.py` never writes the baseline from a bench vendor) |
 
 **Why `-B`?** The kit's scripts do not write bytecode, but a tool of yours that **imports** a kit module writes the
 `.pyc` file inside the vendor, and the next `check` fails. Run everything with `python3 -I -B`, or with

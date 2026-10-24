@@ -10,6 +10,21 @@ Releases before 4.16.0 are described in [ADOPTING.md](ADOPTING.md).
 
 ## [Unreleased]
 
+## [4.24.0] - 2026-10-24
+
+An adopter can bench a commit before its tag without retagging it, and the bench vendor never passes for a release.
+Contract v4.14, unchanged.
+
+### Added
+
+- **`kg_vendor.py update --ref <commit>`, for the bench before a tag.** An adopter that tests a release before it
+  exists had to retag a commit locally, because `--tag` rightly refuses a commit whose `spec/release.json` declares
+  another version. `--ref` brings the tree of a commit as it is; the stamp says `unreleased` and keeps the commit, and
+  `check` fails on that vendor (`UNRELEASED VENDOR`, rc 1) unless `--allow-unreleased` is given, so a bench vendor
+  never passes for a release in CI. `kg_gate.py` refuses one the same way (`--allow-unreleased`, and never
+  `--update` from a bench vendor), so a CI that runs only the gate does not take the bench for a release. A later
+  `update --tag` replaces it without `--force`. Requested by an adopter's bench.
+
 ## [4.23.0] - 2026-10-23
 
 A short code gets a readable name in its own vocabulary, and the codes in prose are checked against it, with a
