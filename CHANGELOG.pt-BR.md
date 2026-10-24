@@ -10,6 +10,22 @@ Esta é a tradução; a fonte é o [CHANGELOG.md](CHANGELOG.md) em inglês. As r
 
 ## [Unreleased]
 
+## [4.25.0] - 2026-10-24
+
+O `trace:` de um nó que aponta para um arquivo movido não passa mais em silêncio: o `kg_trace.py` confere cada âncora
+contra os arquivos do repositório. Contrato v4.14, sem mudança.
+
+### Adicionado
+
+- **O `kg_trace.py`, o trace que não resolve.** Um `trace:` de nó que aponta para um arquivo movido ou renomeado passava
+  no gate em silêncio: o leitor não toca o disco. O `kg_trace.py check --root .` confere cada âncora a partir da raiz
+  do repositório e aponta `integrity.trace-target-missing` (`kg-ssot.trace/1`). Ele julga só o texto que parece
+  caminho do repositório e conta à parte o que não julga (absoluto ou URL, um `--external-root` declarado, não
+  caminho). Um nome sem barra só entra como arquivo rastreado na raiz com o nome exato. Resolve na raiz, na pasta do
+  grafo ou na pasta pai dele, e um alvo que sai da raiz não resolve. As regras são o resolvedor de um adotante, medido
+  em milhares de traces; no corpus desse adotante a ferramenta julga os mesmos 2.500 nós, com 0 faltando. Também no
+  PyPI, como `kg-trace`.
+
 ## [4.24.0] - 2026-10-24
 
 Um adotante testa um commit antes da tag sem refazer a tag na máquina, e o vendor de bancada nunca passa por release.

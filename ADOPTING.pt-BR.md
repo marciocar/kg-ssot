@@ -1,4 +1,4 @@
-<!-- translation-of: ADOPTING.md sha256:907cc0ad23938d30 -->
+<!-- translation-of: ADOPTING.md sha256:c607b768909b8063 -->
 # Adotar o contrato KG-SSOT
 
 [English](ADOPTING.md) | **Português (Brasil)**
@@ -337,6 +337,12 @@ update de novo"). O segundo `update`, já com o kit novo, grava o arquivo sem pr
 `git add`, o `check --index` confirma que o índice guarda os bytes da release. Outra saída é rodar o update uma vez
 só, pelo clone da tag (`../kg-ssot/tools/kg_vendor.py update --tag kg-ssot-v4.8.1 --dest vendor/kg-ssot`). Uma regra
 própria para o vendor no `.gitattributes` da raiz (`vendor/kg-ssot/** -text`) continua valendo e pode ficar.
+
+Da `kg-ssot-v4.24.0` para a `kg-ssot-v4.25.0`, o contrato não muda (segue o v4.14), e o gate não pede `--update`. O
+`kg_trace.py check --root .` confere o `trace:` de cada nó contra os arquivos do repositório e aponta
+`integrity.trace-target-missing`; ele julga só o que parece caminho do repositório e conta o resto à parte. Se os seus
+grafos ancoram numa pasta de fora do repositório, declare-a com `--external-root <prefixo>`. Para rodar no CI, ponha
+`python3 -I -B vendor/kg-ssot/tools/kg_trace.py check --root .` ao lado do gate.
 
 Da `kg-ssot-v4.23.0` para a `kg-ssot-v4.24.0`, o contrato não muda (segue o v4.14), e o gate não pede `--update`. O
 `kg_vendor.py update --ref <commit>` traz um commit que ainda não é release, para a bancada antes da tag; o `check` e

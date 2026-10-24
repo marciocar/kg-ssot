@@ -339,6 +339,12 @@ After `git add`, `check --index` confirms that the index holds the release bytes
 once, from the clone of the tag (`../kg-ssot/tools/kg_vendor.py update --tag kg-ssot-v4.8.1 --dest vendor/kg-ssot`).
 A rule of your own for the vendor in the root `.gitattributes` (`vendor/kg-ssot/** -text`) still works and can stay.
 
+From `kg-ssot-v4.24.0` to `kg-ssot-v4.25.0`, the contract does not change (still v4.14), and the gate asks for no
+`--update`. `kg_trace.py check --root .` checks each node's `trace:` against the files of the repository and reports
+`integrity.trace-target-missing`; it judges only what looks like a path of the repository and counts the rest apart.
+If your graphs anchor in a folder outside the repository, declare it with `--external-root <prefix>`. To run it in
+CI, add `python3 -I -B vendor/kg-ssot/tools/kg_trace.py check --root .` next to the gate.
+
 From `kg-ssot-v4.23.0` to `kg-ssot-v4.24.0`, the contract does not change (still v4.14), and the gate asks for no
 `--update`. `kg_vendor.py update --ref <commit>` brings a commit that is not a release yet, for the bench before a
 tag; `check` and `kg_gate.py` give rc 1 on that vendor unless `--allow-unreleased` is given, and the gate never

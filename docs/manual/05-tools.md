@@ -123,7 +123,7 @@ python3 -I -B vendor/kg-ssot/tools/kg_validate.py --format json \
  "contract": {
   "must": "spec/kg-contract-v4.schema.json",
   "should": "spec/kg-contract-v4.should.schema.json",
-  "release": "kg-ssot-v4.24.0",
+  "release": "kg-ssot-v4.25.0",
   "sha256": { "must": "6a05cb1e…", "should": "04327d29…" }
  },
  "results": [
@@ -980,6 +980,42 @@ python3 -I -B vendor/kg-ssot/tools/kg_audit.py --root . --format csv --view evid
 - **Output and rc.** rc 0 when it exported, 1 when a graph does not read (the package would be incomplete in silence)
   or, with `--fail-on-gap`, when an item has a gap or something was skipped, and 2 on broken input. `xlsx` needs `--output`. Give the corpus with
   `--root`: an edge to another graph resolves by its path from the root.
+
+## `kg_trace.py`: the trace that does not resolve (4.25.0)
+
+A node's `trace:` says where its "why" lives. The reader checks that it is there, never that it still points to
+something: the reader does not touch the disk, so it runs anywhere, in JavaScript too. A `trace:` that points to a
+moved or renamed file passes the gate and misleads whoever goes back to it. This tool checks the anchor from the
+repository root, as `kg_criterion.py` checks a `sha256`.
+
+```bash
+python3 -I -B vendor/kg-ssot/tools/kg_trace.py check --root .
+python3 -I -B vendor/kg-ssot/tools/kg_trace.py check --root . --external-root memory/ --format json
+```
+
+- **What it reads.** The `.kg.yaml` and `.kg.json` files that git tracks under the root, outside the vendor,
+  `docs/materials/`, and the fixture folders (`fixture/`, `fixtures/`, `__fixtures__/`, `testdata/`, `__snapshots__/`,
+  at any depth). `--exclude` adds patterns, and `--no-default-excludes` drops the defaults. A trace that is not text
+  is counted as `not_text`; a node with a repeated or non-text id, which the gate already fails on MUST, is not read
+  here. If your graphs anchor in a folder outside the repository (a session's memory), the check stays red until you
+  declare it with `--external-root`. With no graph read, it says so.
+- **What is judged.** The text of the trace up to its first `:` or `#` (`file:line`, `file#section`), and only when it
+  looks like a path of the repository. Not judged, and counted apart, never in silence:
+  - `absolute`: an absolute path or a URL (another machine or network);
+  - `external_root`: a prefix you declare with `--external-root` (a folder that lives outside the repository);
+  - `not_path`: a character outside `[A-Za-z0-9_./-]` (a command, prose), a name without a slash (a loose word, a
+    config key), or a first segment with a dot that does not start with one (a hostname, `support.example.com/...`).
+
+  A name without a slash comes in only when it is a file tracked at the repository root with the exact name
+  (`ARCHITECTURE.md`), and no file of the same name sits next to the graph or in its parent folder. `./x` and `x` are the
+  same target.
+- **Where it resolves.** At the repository root, in the graph's folder, or in the graph's parent folder (only when the
+  graph is not at the root). A target that leaves the root (`../sibling/x`) does not resolve: the CI clone does not
+  have it.
+- **Output and rc.** Each target that does not resolve is `integrity.trace-target-missing`. `--format json` gives
+  `kg-ssot.trace/1` (`spec/trace.schema.json`). rc 0 when every judged trace resolves, 1 with a missing target or a
+  graph that does not read, 2 on broken input. These rules come from an adopter's resolver measured on thousands of
+  traces; each cut was paid for by a false positive.
 
 ## `kg_prov_export.py`: provenance in PROV-O
 

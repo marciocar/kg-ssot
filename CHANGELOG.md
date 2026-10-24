@@ -10,6 +10,22 @@ Releases before 4.16.0 are described in [ADOPTING.md](ADOPTING.md).
 
 ## [Unreleased]
 
+## [4.25.0] - 2026-10-24
+
+A node's `trace:` that points to a moved file no longer passes in silence: `kg_trace.py` checks each anchor against the
+files of the repository. Contract v4.14, unchanged.
+
+### Added
+
+- **`kg_trace.py`, the trace that does not resolve.** A node's `trace:` that points to a moved or renamed file passed
+  the gate in silence: the reader does not touch the disk. `kg_trace.py check --root .` checks each anchor from the
+  repository root and reports `integrity.trace-target-missing` (`kg-ssot.trace/1`). It judges only the text that looks
+  like a path of the repository, and counts apart what it does not judge (absolute or URL, a declared
+  `--external-root`, not a path). A name without a slash comes in only as a file tracked at the root with the exact
+  name. It resolves at the root, in the graph's folder, or in its parent, and a target that leaves the root does not
+  resolve. The rules are an adopter's resolver, measured on thousands of traces; on that adopter's corpus the tool
+  judges the same 2,500 nodes, with 0 missing. Also on PyPI as `kg-trace`.
+
 ## [4.24.0] - 2026-10-24
 
 An adopter can bench a commit before its tag without retagging it, and the bench vendor never passes for a release.
