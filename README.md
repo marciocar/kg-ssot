@@ -8,7 +8,7 @@ what depends on it, and your CI rejects the ones that don't.**
 **English** | [Português (Brasil)](README.pt-BR.md)
 
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
-[![Contract: v4 · release 4.31.0](https://img.shields.io/badge/contract-v4%20%C2%B7%204.31.0-6f42c1)](spec/release.json)
+[![Contract: v4 · release 4.31.1](https://img.shields.io/badge/contract-v4%20%C2%B7%204.31.1-6f42c1)](spec/release.json)
 [![Conformance: 457/457](https://img.shields.io/badge/conformance-457%2F457-2ea44f)](spec/conformance/README.md)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776ab)](tools/requirements.txt)
 [![PyPI](https://img.shields.io/pypi/v/kg-ssot)](https://pypi.org/project/kg-ssot/)
@@ -16,7 +16,7 @@ what depends on it, and your CI rejects the ones that don't.**
 [![GHCR](https://img.shields.io/badge/ghcr.io-kg--ssot-2496ed)](https://github.com/marciocar/kg-ssot/pkgs/container/kg-ssot)
 [![MCP Registry](https://img.shields.io/badge/MCP%20Registry-kg--ssot-0a0a0a)](https://registry.modelcontextprotocol.io/v0/servers?search=io.github.marciocar/kg-ssot)
 
-[Docs site](https://marciocar.github.io/kg-ssot/) · [Manual](docs/manual/README.md) · [Adopt it](ADOPTING.md) · [The contract](docs/manual/04-contract.md) · [Conformance suite](spec/conformance/README.md) · [Changelog](CHANGELOG.md) · [For AI agents](llms.txt)
+[Documentation](https://marciocar.github.io/kg-ssot/) · [Adopt it](ADOPTING.md) · [The contract](docs/manual/04-contract.md) · [Conformance suite](spec/conformance/README.md) · [Changelog](CHANGELOG.md) · [For AI agents](llms.txt)
 
 ![KG-SSOT in 40 seconds: the contract refuses a claim without a source, the fix, a query and the gate](docs/demo/kg-ssot-demo.gif)
 
@@ -82,7 +82,7 @@ The tools print in English by default and in Brazilian Portuguese when your loca
 | [Claude Desktop](https://github.com/marciocar/kg-ssot/releases/latest) | the `.mcpb` file from the [latest release](https://github.com/marciocar/kg-ssot/releases/latest) | The MCP server as a one-click extension |
 | [MCP Registry](https://registry.modelcontextprotocol.io/v0/servers?search=io.github.marciocar/kg-ssot) | `io.github.marciocar/kg-ssot` | The same server for any MCP client |
 | [Container](https://github.com/marciocar/kg-ssot/pkgs/container/kg-ssot) | `docker pull ghcr.io/marciocar/kg-ssot` | The MCP server as a service next to a client without Python, such as LibreChat |
-| Your repository | `kg_vendor.py update --tag kg-ssot-v4.31.0` | The release vendored by tag, with a sha256 stamp, and the gate in your CI ([manual, chapter 6](docs/manual/06-adoption-and-ci.md)) |
+| Your repository | `kg_vendor.py update --tag kg-ssot-v4.31.1` | The release vendored by tag, with a sha256 stamp, and the gate in your CI ([manual, chapter 6](docs/manual/06-adoption-and-ci.md)) |
 
 ## A node, inside
 
@@ -199,7 +199,7 @@ flowchart LR
 
 ## Status
 
-- **Current:** contract v4, release `kg-ssot-v4.31.0`. The reference reader passes 457 of 457 cases in `latest/`.
+- **Current:** contract v4, release `kg-ssot-v4.31.1`. The reference reader passes 457 of 457 cases in `latest/`.
 - **In use:** three adopters run the gate in CI, one of them in production.
 - **Next:** v5 will fail a `method` outside the `<class>: <detail>` form, which only warns today.
 - **Open:** the semantic layer (freshness, contradiction, domain completeness) lives in `optional/`, and the reference

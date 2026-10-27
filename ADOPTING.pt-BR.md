@@ -1,4 +1,4 @@
-<!-- translation-of: ADOPTING.md sha256:3b138dee43187e15 -->
+<!-- translation-of: ADOPTING.md sha256:22d5893029b716d4 -->
 # Adotar o contrato KG-SSOT
 
 [English](ADOPTING.md) | **Português (Brasil)**
@@ -342,6 +342,9 @@ update de novo"). O segundo `update`, já com o kit novo, grava o arquivo sem pr
 `git add`, o `check --index` confirma que o índice guarda os bytes da release. Outra saída é rodar o update uma vez
 só, pelo clone da tag (`../kg-ssot/tools/kg_vendor.py update --tag kg-ssot-v4.8.1 --dest vendor/kg-ssot`). Uma regra
 própria para o vendor no `.gitattributes` da raiz (`vendor/kg-ssot/** -text`) continua valendo e pode ficar.
+
+Da `kg-ssot-v4.31.0` para a `kg-ssot-v4.31.1`, nada muda para o adotante: só muda o `zensical.toml`, a configuração do
+site de documentação.
 
 Da `kg-ssot-v4.30.0` para a `kg-ssot-v4.31.0`, nada muda no gate nem nas ferramentas vendorizadas: a release
 acrescenta `tools/kg_site.py`, `tools/requirements-site.txt` e `zensical.toml`, que o `kg_vendor.py` traz junto e que

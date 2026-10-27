@@ -10,6 +10,13 @@ Esta é a tradução; a fonte é o [CHANGELOG.md](CHANGELOG.md) em inglês. As r
 
 ## [Unreleased]
 
+## [4.31.1] - 2026-10-27
+
+O site de documentação renderiza os blocos de código e os diagramas: sem extensões de Markdown declaradas, o Zensical
+deixava o código cercado do README e do manual como crases cruas. O `zensical.toml` agora as declara, e a checagem do
+site no CI reprova markdown cru no HTML. Os primeiros links do README viram um só, Documentação, para o site, no lugar de um link para o site e outro
+para o manual, que abriam as mesmas páginas. Contrato v4.15, sem mudança.
+
 ## [4.31.0] - 2026-10-26
 
 Um site de documentação em https://marciocar.github.io/kg-ssot/, construído do README, do guia de adoção, do changelog e

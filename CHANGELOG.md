@@ -10,6 +10,13 @@ Releases before 4.16.0 are described in [ADOPTING.md](ADOPTING.md).
 
 ## [Unreleased]
 
+## [4.31.1] - 2026-10-27
+
+The documentation site renders code blocks and diagrams: without declared Markdown extensions, Zensical left the fenced
+code of the README and the manual as raw backticks. `zensical.toml` now declares them, and the site check in CI fails on
+raw Markdown in the HTML. The README's first links are now one Documentation link to the site, in place of a separate docs-site
+link and a manual link that opened the same pages. Contract v4.15, unchanged.
+
 ## [4.31.0] - 2026-10-26
 
 A documentation site at https://marciocar.github.io/kg-ssot/, built from the README, the adoption guide, the changelog
