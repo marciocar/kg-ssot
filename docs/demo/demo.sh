@@ -34,7 +34,7 @@ p.write_text(p.read_text().replace(
     'label: "The nightly backup completes in under one hour.",\n'
     '     verified_at: "2026-10-20", verified_against: "logs/backup-2026-10-20.log",\n'
     '     provenance: {source: "logs/backup-2026-10-20.log", locator: "completed in 52m",\n'
-    '                  method: "leitura: the backup log"}}'))
+    '                  method: "reading: the backup log"}}'))
 PY
 run "head -7 backup.kg.yaml"
 run "kg-validate backup.kg.yaml"
