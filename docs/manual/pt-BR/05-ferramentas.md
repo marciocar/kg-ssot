@@ -1,4 +1,4 @@
-<!-- translation-of: docs/manual/05-tools.md sha256:7c9700c7976a29d9 -->
+<!-- translation-of: docs/manual/05-tools.md sha256:5b8c9da30c9f9677 -->
 # 5. Ferramentas
 
 [English](../05-tools.md) | **Português (Brasil)**
@@ -126,7 +126,7 @@ python3 -I -B vendor/kg-ssot/tools/kg_validate.py --format json \
  "contract": {
   "must": "spec/kg-contract-v4.schema.json",
   "should": "spec/kg-contract-v4.should.schema.json",
-  "release": "kg-ssot-v4.35.0",
+  "release": "kg-ssot-v4.36.0",
   "sha256": { "must": "6a05cb1e…", "should": "04327d29…" }
  },
  "results": [
@@ -837,6 +837,44 @@ chain: complete
   `confidence` dele já dá o preço do repasse; a origem é, porque é onde a afirmação nasce.
 
 A corrente é declarada por quem escreve o grafo: a projeção a mede, não prova quem de fato disse o quê.
+
+### A atenção e as decisões a revisitar (4.36.0)
+
+Uma decisão é um nó como os outros, e o grafo já guarda a história dela: a decisão nova `SUPERSEDES` a antiga, a
+refutação guarda o nó refutado, e nada é apagado. Três visões tornam essa história uma pergunta que se faz.
+
+- **`--sort attention`** ordena os nós pelo peso deles no radar: `impact × confidence × fator do status × (1 + grau)`,
+  em que o grau conta as arestas que tocam o nó e o fator do status é 1,0 para `open`, `confirmed` e `unverifiable`, 1,3
+  para `drifted`, 0,2 para `superseded`, 0,1 para `done` e 0 para `refuted`. O empate vai para o id em ordem
+  decrescente. É a mesma fórmula e o mesmo desempate do radar do framework onde o formato nasceu, então os dois dão a
+  mesma fila num mesmo grafo que passa no MUST. O grau fica no escopo do arquivo do nó, como no radar: a aresta conta
+  para as pontas locais do arquivo que a declara, o evento de um `trigger` também conta, e a aresta que chega de outro
+  arquivo não, então a atenção não muda com o `--root`. Cada nó da página traz a sua `attention`; a ordem usa o valor sem
+  arredondar.
+- **`--decision <id>`** dá a história de uma decisão: o que ela substituiu e o que a substituiu, em toda a linhagem de
+  `SUPERSEDES`, o que a refuta, o que a apoia e em que ela se apoia (as `SUPPORTS` que chegam nela, as `TRACES_TO` e
+  `DEPENDS_ON` que saem dela, e o passo do `provenance.source`; a `SUPPORTS` que sai dela diz o que ela apoia, não em
+  que ela se apoia), com o status de cada um. `--format json` dá `kg-ssot.decision/1`
+  (`spec/decision.schema.json`).
+- **`--revisit`** lista as decisões vivas (nem `superseded` nem `refuted`) que pedem revisão, pela atenção, cada uma com
+  os motivos: `evidence-due` (algo em que ela se apoia passou do `reverify_every`), `review-due` (a própria decisão passou do
+  `reverify_every`) e `contested` (ela recebe `REFUTES` e segue viva). A decisão com só `reverify_on` espera o evento e
+  sai à parte; a decisão com cadência e sem `verified_at` sai em `unstamped`, e o apoio fora do corpus em `unresolved`,
+  para nada sumir em silêncio. O apoio refutado ou substituído não é motivo:
+  inferido das arestas, deu 1 aviso útil em 10 no corpus do framework onde o formato nasceu, e por isso a queda aparece
+  no `--decision`, onde quem lê vê o status de cada apoio. `--as-of AAAA-MM-DD` muda a data; o padrão é hoje. `--format json` dá `kg-ssot.revisit/1`
+  (`spec/revisit.schema.json`).
+
+```bash
+kg-query --root . --open --sort attention --limit 10
+kg-query --root . --decision D_RETRY_3
+kg-query --root . --revisit
+```
+
+As opções rejeitadas não pedem campo novo: escreva cada opção como um nó, e a decisão escolhida refuta ou substitui as
+outras, com o motivo na narrativa. Um detector automático de contradições foi medido para esta versão e ficou de fora:
+ele achava afirmações irmãs, não contradições. A tensão é a refutação que alguém registra, e a atenção diz qual olhar
+primeiro.
 
 ## `kg_diff.py`: o diff por id entre revisões
 

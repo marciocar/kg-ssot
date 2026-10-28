@@ -343,6 +343,9 @@ After `git add`, `check --index` confirms that the index holds the release bytes
 once, from the clone of the tag (`../kg-ssot/tools/kg_vendor.py update --tag kg-ssot-v4.8.1 --dest vendor/kg-ssot`).
 A rule of your own for the vendor in the root `.gitattributes` (`vendor/kg-ssot/** -text`) still works and can stay.
 
+From `kg-ssot-v4.35.0` to `kg-ssot-v4.36.0`, nothing changes in the contract or the gate's verdict: the release
+adds `kg_query --sort attention`, `--decision` and `--revisit`, which only run if you call them.
+
 From `kg-ssot-v4.34.0` to `kg-ssot-v4.35.0`, nothing changes in the contract or the gate's verdict, but the
 **Python floor is now 3.12**: a CI that still pins 3.11 must move to 3.12 or later before updating. `kg_trace check`
 can now fail on a JSON Pointer `provenance.locator` that does not resolve; if your graphs carry such locators, run it

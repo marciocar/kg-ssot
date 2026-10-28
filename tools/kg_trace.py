@@ -324,6 +324,7 @@ def projection(root, pages, withs=(), exclude=(), defaults=True):
                         res["unpinned"].append(d)  # lido da árvore: o ref da URL não está na pasta do --with
                 elif got is False:  # o --with cobre a URL, e o grafo não se lê: é erro, não "outro repositório"
                     res["graph_errors"].append({"page": page, "graph": d})
+                    unloaded.append(d)  # o id que ele teria não é julgado: sem leitura, não há veredito sobre o id
                 else:
                     unloaded.append(d)
                 continue
@@ -334,6 +335,7 @@ def projection(root, pages, withs=(), exclude=(), defaults=True):
                 files.add(rel)
             else:
                 res["graph_errors"].append({"page": page, "graph": d})
+                unloaded.append(d)  # idem: o erro do grafo reprova a página, e o id fica sem veredito
         known = {i for f, i in corpus.order if f in files}
         body = text[m.end():] if m else text
         found = list(dict.fromkeys(CITED_ID.findall(body)))

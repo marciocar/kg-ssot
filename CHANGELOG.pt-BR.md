@@ -10,6 +10,24 @@ Esta é a tradução; a fonte é o [CHANGELOG.md](CHANGELOG.md) em inglês. As r
 
 ## [Unreleased]
 
+## [4.36.0] - 2026-10-28
+
+Contrato v4.16, sem mudança. Um grafo já guarda a história das suas decisões: a decisão nova substitui a antiga, a
+refutação guarda o nó refutado, e nada é apagado. Esta versão torna essa história uma pergunta que se faz.
+
+- O `kg_query --sort attention` ordena os nós pelo peso deles no radar, `impact × confidence × fator do status × (1 +
+  grau)`, com o grau no escopo do arquivo do nó e o empate pelo id em ordem decrescente, e dá a mesma fila do radar do
+  framework onde o formato nasceu num grafo que passa no MUST.
+- O `kg_query --decision <id>` dá a história de uma decisão: o que ela substituiu e o que a substituiu em toda a
+  linhagem de `SUPERSEDES`, o que a refuta e a apoia, e em que ela se apoia, com o status de cada um
+  (`kg-ssot.decision/1`).
+- O `kg_query --revisit [--as-of DATA]` lista as decisões vivas a revisitar, pela atenção, com o motivo:
+  `evidence-due`, `review-due` ou `contested`, em que o apoio é o que chega na decisão por `SUPPORTS` e aquilo a que ela
+  se liga ou de que depende; o apoio refutado ou substituído é história que o `--decision` mostra, não motivo; as que esperam um evento, as que têm cadência e não
+  carimbo, e as que se apoiam em algo fora do corpus saem à parte (`kg-ssot.revisit/1`).
+- `kg_trace.py projection`: o id de uma página cujo grafo declarado não se lê deixa de ser `missing`; o erro do grafo
+  segue reprovando a página.
+
 ## [4.35.0] - 2026-10-27
 
 Contrato v4.16, sem mudança. **Python 3.12 ou mais** (era 3.11): o pacote, o bundle MCPB e a documentação dizem isso,

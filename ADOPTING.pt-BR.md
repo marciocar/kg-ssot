@@ -1,4 +1,4 @@
-<!-- translation-of: ADOPTING.md sha256:c584d08f37244bd4 -->
+<!-- translation-of: ADOPTING.md sha256:34c327072e9a5a51 -->
 # Adotar o contrato KG-SSOT
 
 [English](ADOPTING.md) | **Português (Brasil)**
@@ -342,6 +342,9 @@ update de novo"). O segundo `update`, já com o kit novo, grava o arquivo sem pr
 `git add`, o `check --index` confirma que o índice guarda os bytes da release. Outra saída é rodar o update uma vez
 só, pelo clone da tag (`../kg-ssot/tools/kg_vendor.py update --tag kg-ssot-v4.8.1 --dest vendor/kg-ssot`). Uma regra
 própria para o vendor no `.gitattributes` da raiz (`vendor/kg-ssot/** -text`) continua valendo e pode ficar.
+
+Da `kg-ssot-v4.35.0` para a `kg-ssot-v4.36.0`, nada muda no contrato nem no veredito do gate: a versão acrescenta o
+`kg_query --sort attention`, o `--decision` e o `--revisit`, que só rodam se você os chamar.
 
 Da `kg-ssot-v4.34.0` para a `kg-ssot-v4.35.0`, nada muda no contrato nem no veredito do gate, mas o **piso do Python
 agora é 3.12**: um CI que ainda fixa o 3.11 precisa ir para o 3.12 ou mais antes do update. O `kg_trace check` pode

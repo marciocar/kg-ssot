@@ -10,6 +10,24 @@ Releases before 4.16.0 are described in [ADOPTING.md](ADOPTING.md).
 
 ## [Unreleased]
 
+## [4.36.0] - 2026-10-28
+
+Contract v4.16, unchanged. A graph already keeps the history of its decisions: a new decision supersedes the old one,
+a refutation keeps the refuted node, and nothing is deleted. This release makes that history something you can ask.
+
+- `kg_query --sort attention` orders nodes by their weight on the radar, `impact × confidence × status factor × (1 +
+  degree)`, with the degree scoped to the node's file and ties broken by id in descending order, so it gives the same
+  queue as the radar of the framework where the format was born on a graph that passes the MUST.
+- `kg_query --decision <id>` gives the history of a decision: what it replaced and what replaced it along the whole
+  `SUPERSEDES` line, what refutes and supports it, and what it rests on, with the status of each
+  (`kg-ssot.decision/1`).
+- `kg_query --revisit [--as-of DATE]` lists the live decisions to revisit, by attention, with the reason:
+  `evidence-due`, `review-due` or `contested`, where the support is what reaches the decision by `SUPPORTS` and what it
+  traces to or depends on; a support that was refuted or superseded is history shown by `--decision`, not a reason; decisions that wait for an event, have a cadence
+  but no stamp, or rest on something outside the corpus are listed apart (`kg-ssot.revisit/1`).
+- `kg_trace.py projection`: an id of a page whose declared graph does not read is no longer `missing`; the graph error
+  still fails the page.
+
 ## [4.35.0] - 2026-10-27
 
 Contract v4.16, unchanged. **Python 3.12 or later** (it was 3.11): the package, the MCPB bundle and the docs say so, CI

@@ -123,7 +123,7 @@ python3 -I -B vendor/kg-ssot/tools/kg_validate.py --format json \
  "contract": {
   "must": "spec/kg-contract-v4.schema.json",
   "should": "spec/kg-contract-v4.should.schema.json",
-  "release": "kg-ssot-v4.35.0",
+  "release": "kg-ssot-v4.36.0",
   "sha256": { "must": "6a05cb1e…", "should": "04327d29…" }
  },
  "results": [
@@ -846,6 +846,44 @@ chain: complete
   already prices the relay; the origin is, because it is where the claim is made.
 
 The chain is declared by whoever writes the graph: the projection measures it, it does not prove who really said what.
+
+### Attention, and the decisions to revisit (4.36.0)
+
+A decision is a node like any other, and the graph already keeps its history: a new decision `SUPERSEDES` the old one,
+a refutation keeps the refuted node, and nothing is deleted. Three views make that history something you can ask.
+
+- **`--sort attention`** orders the nodes by their weight on the radar: `impact × confidence × status factor × (1 +
+  degree)`, where degree counts the edges that touch the node and the status factor is 1.0 for `open`, `confirmed` and
+  `unverifiable`, 1.3 for `drifted`, 0.2 for `superseded`, 0.1 for `done` and 0 for `refuted`. A tie goes to the id in
+  descending order. It is the same formula and the same tie-break as the radar of the framework where the format was
+  born, so both give the same queue on the same graph that passes the MUST. The degree is scoped to the node's file, as
+  in the radar: an edge counts for the local ends of the file that declares it, the event of a `trigger` counts too,
+  and an edge that arrives from another file does not, so the attention does not change with `--root`. Each node of the
+  page carries its `attention`; the order uses the unrounded value.
+- **`--decision <id>`** gives the history of one decision: what it replaced and what replaced it, along the whole
+  `SUPERSEDES` line, what refutes it, what supports it, and what it rests on (the `SUPPORTS` that reach it, its outgoing
+  `TRACES_TO` and `DEPENDS_ON`, and the step of its `provenance.source`; an outgoing `SUPPORTS` says what the decision
+  supports, not what it rests on), each with its status. `--format json` gives
+  `kg-ssot.decision/1` (`spec/decision.schema.json`).
+- **`--revisit`** lists the live decisions (not `superseded` nor `refuted`) that ask for a review, by attention, each
+  with its reasons: `evidence-due` (something it rests on is past its `reverify_every`), `review-due` (the decision itself is past its
+  `reverify_every`) and `contested` (it receives a `REFUTES` and is still live). A decision with only `reverify_on`
+  waits for its event and is listed apart; a decision with a cadence but no `verified_at` is listed in `unstamped`, and
+  a support outside the corpus in `unresolved`, so nothing is dropped in silence. A support that was refuted or
+  superseded is not a reason: inferred from the edges, it gave 1 useful warning in 10 on the corpus of the framework
+  where the format was born, so the fall shows in `--decision`, where the reader sees the status of each support. `--as-of YYYY-MM-DD` sets the date; the default is today. `--format json`
+  gives `kg-ssot.revisit/1` (`spec/revisit.schema.json`).
+
+```bash
+kg-query --root . --open --sort attention --limit 10
+kg-query --root . --decision D_RETRY_3
+kg-query --root . --revisit
+```
+
+Rejected options need no new field: write each option as a node, and let the chosen decision refute or supersede the
+others, with the reason in its narrative. An automatic detector of contradictions was measured for this release and
+left out: it found sibling claims, not contradictions. A tension is a refutation someone records, and attention says
+which one to look at first.
 
 ## `kg_diff.py`: diff by id between revisions
 
