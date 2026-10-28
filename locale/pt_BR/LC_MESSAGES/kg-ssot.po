@@ -3413,14 +3413,6 @@ msgid "projection: the pages to check (default: every tracked .md with projectio
 msgstr "projection: as páginas a conferir (padrão: todo .md rastreado com projection_of)"
 
 #: tools/kg_trace.py
-msgid "projection: read a graph of another repository that projection_of names by URL"
-msgstr "projection: lê um grafo de outro repositório que o projection_of nomeia por URL"
-
-#: tools/kg_trace.py
-msgid "pages and --with go with projection"
-msgstr "páginas e --with vão com projection"
-
-#: tools/kg_trace.py
 msgid "GRAPH NOT READ  {page}  projection_of: {graph}"
 msgstr "GRAFO NÃO LIDO  {page}  projection_of: {graph}"
 
@@ -3481,18 +3473,6 @@ msgid "  supported by:"
 msgstr "  apoiada por:"
 
 #: tools/kg_query.py
-msgid "--as-of goes with --revisit"
-msgstr "--as-of vai com --revisit"
-
-#: tools/kg_query.py
-msgid "--decision and --revisit are different questions: ask one at a time"
-msgstr "--decision e --revisit são perguntas diferentes: faça uma de cada vez"
-
-#: tools/kg_query.py
-msgid "--decision and --revisit do not combine with --around, --text, --semantic or --chain"
-msgstr "--decision e --revisit não se combinam com --around, --text, --semantic nem --chain"
-
-#: tools/kg_query.py
 msgid "--semantic orders by similarity: it does not combine with --sort impact or attention"
 msgstr "--semantic ordena por semelhança: não se combina com --sort impact nem attention"
 
@@ -3529,10 +3509,6 @@ msgid "what it rests on is due for a re-check"
 msgstr "aquilo em que ela se apoia venceu a reconferência"
 
 #: tools/kg_query.py
-msgid "with --revisit, the date that counts as today"
-msgstr "com --revisit, a data que conta como hoje"
-
-#: tools/kg_query.py
 msgid "· {n} decision(s) to revisit on {date}; {m} wait for an event (reverify_on)"
 msgstr "· {n} decisão(ões) a revisitar em {date}; {m} esperam um evento (reverify_on)"
 
@@ -3543,3 +3519,55 @@ msgstr "· {n} decisão(ões) têm cadência mas não verified_at, e por isso nu
 #: tools/kg_query.py
 msgid "· {n} support(s) are outside the corpus and were not judged: {ids}"
 msgstr "· {n} apoio(s) estão fora do corpus e não foram julgados: {ids}"
+
+#: tools/kg_validate.py
+msgid "Copy the passage again as it is in the file, or retire the node if the passage is gone."
+msgstr "Copie o trecho de novo como está no arquivo, ou aposente o nó se o trecho sumiu."
+
+#: tools/kg_validate.py
+msgid "Point the locator to where the passage is now (lines from 0 as boundaries in text, rows and columns from 1 in csv), or fix the scheme."
+msgstr "Aponte o locator para onde o trecho está agora (linhas a partir de 0, como fronteiras, em text; linhas e colunas a partir de 1 em csv), ou corrija o scheme."
+
+#: tools/kg_validate.py
+msgid "Read the source again and record the new hash, or cite the commit that has the version that was read."
+msgstr "Leia a fonte de novo e registre o hash novo, ou cite o commit que tem a versão que foi lida."
+
+#: tools/kg_validate.py
+msgid "The exact text of the node's provenance.locator (scheme quote) does not appear in the file it names."
+msgstr "O texto exato do provenance.locator do nó (scheme quote) não aparece no arquivo que ele nomeia."
+
+#: tools/kg_validate.py
+msgid "The node's provenance.locator, read by its scheme, points to a line, a character, a row, a column or a node that the file it names does not have."
+msgstr "O provenance.locator do nó, lido pelo scheme, aponta uma linha, um caractere, uma linha ou coluna de CSV, ou um nó que o arquivo nomeado não tem."
+
+#: tools/kg_validate.py
+msgid "The provenance.sha256 of the node differs from the hash of the file it names: the source changed after it was read."
+msgstr "O provenance.sha256 do nó difere do hash do arquivo que ele nomeia: a fonte mudou depois de lida."
+
+#: tools/kg_trace.py
+msgid "pages go with projection"
+msgstr "páginas vão com projection"
+
+#: tools/kg_trace.py
+msgid "read a file of another repository that a URL names, in the commit of the URL: the graph of projection_of, or the provenance.source of check"
+msgstr "lê um arquivo de outro repositório que uma URL nomeia, no commit da URL: o grafo do projection_of, ou o provenance.source do check"
+
+#: tools/kg_query.py
+msgid "--as-of goes with --revisit"
+msgstr "--as-of vai com --revisit"
+
+#: tools/kg_query.py
+msgid "--decision and --revisit are different questions: ask one at a time"
+msgstr "--decision e --revisit são perguntas diferentes: faça uma de cada vez"
+
+#: tools/kg_query.py
+msgid "--decision and --revisit do not combine with --around, --text, --semantic or --chain"
+msgstr "--decision e --revisit não se combinam com --around, --text, --semantic nem --chain"
+
+#: tools/kg_query.py
+msgid "with --revisit, the date that counts as today"
+msgstr "com --revisit, a data que conta como hoje"
+
+#: tools/kg_trace.py
+msgid "· {judged} source(s) read by scheme or sha256: {ok} ok, {failed} failed ({sha} sha256 checked); not judged (counted): {form} form only, {absolute} URL with no --with, {missing} source not found, {malformed} malformed scheme, locator or hash, {other} other"
+msgstr "· {judged} fonte(s) lida(s) pelo scheme ou pelo sha256: {ok} ok, {failed} com falha ({sha} sha256 conferido(s)); não julgado (contado): {form} só pela forma, {absolute} URL sem --with, {missing} fonte não achada, {malformed} scheme, locator ou hash malformado, {other} outro(s)"

@@ -30,6 +30,7 @@ import collections
 import datetime
 import fnmatch
 import json
+import os
 import pathlib
 import re
 import subprocess
@@ -139,7 +140,7 @@ def load(root=None, files=(), exclude=(), defaults=True):
         if not base.is_dir():
             raise ValueError(_("--root {root} is not a directory").format(root=root))
         corpus.root = str(root)
-        out = subprocess.run(["git", "-C", str(base), "ls-files", "-z", "--", "*.kg.yaml", "*.kg.json"], capture_output=True)
+        out = _git(str(base), "ls-files", "-z", "--", "*.kg.yaml", "*.kg.json")
         if out.returncode == 0:
             names = [n for n in out.stdout.decode("utf-8").split("\0") if n]
         else:
@@ -279,9 +280,14 @@ def with_spec(text):
     return prefix, folder
 
 
+GIT_ENV_DROP = ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE")  # um hook de pre-commit os define para o repo dele
+
+
 def _git(folder, *args):
-    """git -C folder com --end-of-options antes do que vem do grafo: um ref que começa com - nunca vira opção."""
-    return subprocess.run(["git", "-C", folder, *args], capture_output=True)
+    """git -C folder com --end-of-options antes do que vem do grafo: um ref que começa com - nunca vira opção. Sem o
+    GIT_DIR, o GIT_WORK_TREE e o GIT_INDEX_FILE herdados, que apontariam o git para outro repositório."""
+    env = {k: v for k, v in os.environ.items() if k not in GIT_ENV_DROP}
+    return subprocess.run(["git", "-C", folder, *args], capture_output=True, env=env)
 
 
 def load_external(corpus, url):

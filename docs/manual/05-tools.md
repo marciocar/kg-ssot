@@ -123,7 +123,7 @@ python3 -I -B vendor/kg-ssot/tools/kg_validate.py --format json \
  "contract": {
   "must": "spec/kg-contract-v4.schema.json",
   "should": "spec/kg-contract-v4.should.schema.json",
-  "release": "kg-ssot-v4.36.0",
+  "release": "kg-ssot-v4.37.0",
   "sha256": { "must": "6a05cb1e…", "should": "04327d29…" }
  },
  "results": [
@@ -179,7 +179,7 @@ The last lines:
 
 ```text
 —
-latest: 463/463 (gates the rc)
+latest: 508/508 (gates the rc)
 optional: 10/24 (report only)
 ```
 
@@ -1167,6 +1167,39 @@ not only the file.
 - **Output and rc.** A pointer that does not resolve is `integrity.trace-locator-missing`, and a JSON file that does not
   read is `integrity.trace-locator-unreadable`; both give rc 1. The JSON output gains `locators`, additive and outside
   `required`, so the output of 4.25 stays valid. Write the path in `trace:` too: that is what says the file itself is gone.
+
+### The locator by scheme, and the hash of the source (4.37.0)
+
+When a node declares `provenance.scheme` or `provenance.sha256` (contract v4.17), `kg_trace check` opens the source and
+checks them.
+
+- **The source.** The file of the repository that `provenance.source` names, or, with `--with PREFIX=FOLDER`, the file
+  that a URL names at the commit of the URL (`<prefix>/<commit>/<path>`), read from a local clone of the other
+  repository with `git show`. The folder must be the root of a git clone, and the reference in the URL must be a
+  commit name: a commit that the clone does not have, or a folder that is not the root of a clone, is
+  `missing_source`, and a branch or tag name (`main`, `HEAD`) is `unpinned`, since it moves. A pinned source is never
+  checked against another version. A URL with no `--with` that matches is counted as `absolute`.
+- **The hash.** `provenance.sha256` against the content of the source as git stores it: a tracked file with no
+  change since the index is read from its blob, so a checkout that converts line endings (`core.autocrlf`, the git
+  default on Windows) gives the same hash as on Linux, and the same as `git show <commit>:<path> | sha256sum`. A file
+  with a change, or outside git, is read from disk. A difference is `integrity.trace-sha256-mismatch`, the source
+  changed after it was read.
+- **The locator.** `text` (the line or character range exists, characters counted as code points and each line
+  ending as one, as RFC 5147 asks), `csv` (the row, column or cell exists, the column of a cell against its own row),
+  `quote` (the exact text appears, with runs of spaces counted as one), `kg-node` (the node exists in the graph) and
+  `json-pointer` (it resolves in a `.json` source, in both forms of RFC 6901). Out of range is
+  `integrity.trace-locator-out-of-range`; a quote that is not there, `integrity.trace-quote-missing`. Not judged, and
+  counted, never as ok: `pdf`, `media` and `html` (`form_only`, judged by form in the schema), a locator outside the
+  grammar of its scheme, a scheme outside the table or a `sha256` out of form (`malformed`, which the schema already
+  warns about), a JSON Pointer on a source that is not JSON (`not_json`) and a source that is not UTF-8
+  (`not_text`). A pointer judged here is not judged again in `locators`; one that could not be judged here (a source
+  that is gone, an anchor in `trace:`) still is, as in 4.35.0.
+- **Output and rc.** Each failure gives rc 1. The JSON output gains `schemes`, additive and outside `required`.
+
+```bash
+kg-trace check --root . \
+  --with https://github.com/acme/core/blob=../core
+```
 
 ### The projection checker (`kg_trace.py projection`, 4.35.0)
 
